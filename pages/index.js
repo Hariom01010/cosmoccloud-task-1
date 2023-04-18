@@ -7,15 +7,32 @@ const FormField = ({ field, onChange, onDelete,style,level }) => {
   const { name, type, fields, required } = field;
 
   const handleFieldChange = (e) => {
-  const { name, value, checked, type } = e.target;
-  console.log(e.target)
-  const fieldValue = type === "checkbox" ? checked.toString() : value;
-  onChange(name, fieldValue);
+    const { name, value, checked, type } = e.target;
+    const fieldValue = type === "checkbox" ? checked : value;
+    onChange(name, fieldValue);
 };
 
   const handleDelete = () => {
     onDelete(name);
   };
+
+  const handleNestedFieldChange = (index, fieldName, fieldValue) => {
+    const updatedFields = [...field.fields];
+    updatedFields[index][fieldName] = fieldValue;
+    onChange("fields", updatedFields);
+  };
+  const handleAddNestedField = () => {
+    const updatedFields = [...(field.fields || [])];
+    updatedFields.push({ name: "", type: "", required:false, fields:[] });
+    onChange("fields", updatedFields);
+  };
+
+  const handleDeleteNestedField = (index) => {
+    const updatedFields = [...field.fields];
+    updatedFields.splice(index, 1);
+    onChange("fields", updatedFields);
+  };
+
 
   const renderFields = () => {
     if (type === "Object" && fields && fields.length > 0) {
@@ -39,24 +56,7 @@ const FormField = ({ field, onChange, onDelete,style,level }) => {
     return null;
   };
 
-  const handleNestedFieldChange = (index, fieldName, fieldValue) => {
-    const updatedFields = [...field.fields];
-    updatedFields[index][fieldName] = fieldValue;
-    onChange("fields", updatedFields);
-  };
-
-  const handleAddNestedField = () => {
-    const updatedFields = [...(field.fields || [])];
-    updatedFields.push({ name: "", type: "" });
-    onChange("fields", updatedFields);
-  };
-
-  const handleDeleteNestedField = (index) => {
-    const updatedFields = [...field.fields];
-    updatedFields.splice(index, 1);
-    onChange("fields", updatedFields);
-  };
-
+  
   return (
     <div>
       <div style={style}>
@@ -72,8 +72,8 @@ const FormField = ({ field, onChange, onDelete,style,level }) => {
       </div>
       <div className={styles.inputDivSub2}>
         <div>
-        <label>Required: </label>
-        <Switch onChange={handleFieldChange} name="required" value={false}/>
+        <label htmlFor="isRequired">Required: </label>
+        <Switch onChange={handleFieldChange} name="required" isChecked={field.required} id="isRequired"/>
         </div>
       {field.type === "Object" && (
         <button onClick={handleAddNestedField}>+</button>
@@ -95,14 +95,10 @@ const App = () => {
   ]);
 
   const handleFieldChange = (index, fieldName, fieldValue) => {
-  const updatedFormData = [...formData];
-  if (fieldName === "required") {
-    // Convert the "fieldValue" to a boolean value
-    fieldValue = fieldValue === "true";
-  }
-  updatedFormData[index][fieldName] = fieldValue;
-  setFormData(updatedFormData);
-};
+    const updatedFormData = [...formData];
+    updatedFormData[index][fieldName] = fieldValue;
+    setFormData(updatedFormData);
+  };
 
 
   const handleDeleteField = (index) => {
@@ -113,7 +109,7 @@ const App = () => {
 
   const handleAddField = () => {
     const updatedFormData = [...formData];
-    updatedFormData.push({ name: "", type: "", fields: [] });
+    updatedFormData.push({ name: "", type: "", required:false, fields: [] });
     setFormData(updatedFormData);
   };
 
@@ -131,7 +127,7 @@ const App = () => {
       
       {formData.map((field, index) => (
         <>
-        <span>{index+1}</span>
+        <span key={index}>{index+1}</span>
         <div style={{display:"inline-flex", alignItems:"center"}}>
         <FormField
           key={index}
