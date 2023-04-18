@@ -7,10 +7,11 @@ const FormField = ({ field, onChange, onDelete,style,level }) => {
   const { name, type, fields, required } = field;
 
   const handleFieldChange = (e) => {
-    const { name, value, checked, type } = e.target;
-    const fieldValue = type === "checkbox" ? checked : value;
-    onChange(name, fieldValue);
-  };
+  const { name, value, checked, type } = e.target;
+  console.log(e.target)
+  const fieldValue = type === "checkbox" ? checked.toString() : value;
+  onChange(name, fieldValue);
+};
 
   const handleDelete = () => {
     onDelete(name);
@@ -72,7 +73,7 @@ const FormField = ({ field, onChange, onDelete,style,level }) => {
       <div className={styles.inputDivSub2}>
         <div>
         <label>Required: </label>
-        <Switch onChange={handleFieldChange} name="required"/>
+        <Switch onChange={handleFieldChange} name="required" value={false}/>
         </div>
       {field.type === "Object" && (
         <button onClick={handleAddNestedField}>+</button>
@@ -94,10 +95,15 @@ const App = () => {
   ]);
 
   const handleFieldChange = (index, fieldName, fieldValue) => {
-    const updatedFormData = [...formData];
-    updatedFormData[index][fieldName] = fieldValue;
-    setFormData(updatedFormData);
-  };
+  const updatedFormData = [...formData];
+  if (fieldName === "required") {
+    // Convert the "fieldValue" to a boolean value
+    fieldValue = fieldValue === "true";
+  }
+  updatedFormData[index][fieldName] = fieldValue;
+  setFormData(updatedFormData);
+};
+
 
   const handleDeleteField = (index) => {
     const updatedFormData = [...formData];
@@ -134,7 +140,7 @@ const App = () => {
             handleFieldChange(index, fieldName, fieldValue)
           }
           onDelete={() => handleDeleteField(index)}
-          style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"42.5rem"}}
+          style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"44vw"}}
           level={1}
       />
       </div>

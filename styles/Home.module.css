@@ -2,6 +2,7 @@
   display: flex;
   width: 50vw;
   margin: auto;
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
 }
 
 .subDiv{
@@ -76,4 +77,18 @@
   color: white;
   margin: 12px;
   border-radius: 5px;
+}
+
+
+@media all and (max-width:950px){
+  .mainDiv{
+    display: flex;
+    width: 70vw;
+    margin: auto;
+  }
+  .subDiv{
+    background-color: #efefef;
+    width: 65vw;
+    margin: 20px auto;
+  }
 }
