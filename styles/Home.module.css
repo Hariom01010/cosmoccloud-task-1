@@ -2,9 +2,6 @@
   display: flex;
   width: 50vw;
   margin: auto;
-  top: 50vh;
-  position: relative;
-  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
 }
 
 .subDiv{
@@ -35,16 +32,13 @@
   width: 98%;
 }
 
-.fieldSubDiv1{
-  display: flex;
-  justify-content: space-evenly;
-  align-items: center;
+.inputDivSub2{
+  display:flex;
+  padding:6px;
 }
 
-.fieldSubDiv2{
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
+.inputDivSub2 div,.inputDivSub2 button{
+  margin-left:6px;
 }
 
 .fieldName{

@@ -1,6 +1,8 @@
 import React, { useState } from "react";
+import styles from "../styles/Home.module.css"
+import { RiDeleteBin5Line } from "react-icons/ri"
 
-const FormField = ({ field, onChange, onDelete }) => {
+const FormField = ({ field, onChange, onDelete,style,level }) => {
   const { name, type, fields } = field;
 
   const handleFieldChange = (e) => {
@@ -15,7 +17,7 @@ const FormField = ({ field, onChange, onDelete }) => {
   const renderFields = () => {
     if (type === "Object" && fields && fields.length > 0) {
       return (
-        <div className="nested-fields">
+        <div style={{margin:"0px"}}>
           {fields.map((nestedField, index) => (
             <FormField
               key={index}
@@ -23,7 +25,9 @@ const FormField = ({ field, onChange, onDelete }) => {
               onChange={(fieldName, fieldValue) =>
                 handleNestedFieldChange(index, fieldName, fieldValue)
               }
-              onDelete={(fieldName) => handleDeleteNestedField(index)}
+              onDelete={() => handleDeleteNestedField(index)}
+              style={{marginLeft: `${level * 12}px`, display:"flex", alignItems:"center", justifyContent:"space-between"}}
+              level={level+1}
             />
           ))}
         </div>
@@ -39,7 +43,7 @@ const FormField = ({ field, onChange, onDelete }) => {
   };
 
   const handleAddNestedField = () => {
-    const updatedFields = [...(field.fields || [])]; // Use an empty array if field.fields is not defined
+    const updatedFields = [...(field.fields || [])];
     updatedFields.push({ name: "", type: "" });
     onChange("fields", updatedFields);
   };
@@ -51,28 +55,29 @@ const FormField = ({ field, onChange, onDelete }) => {
   };
 
   return (
-    <div className="form-field">
-      <input
-        type="text"
-        name="name"
-        value={name}
-        placeholder="Field Name"
-        onChange={handleFieldChange}
-      />
-      <select name="type" value={type} onChange={handleFieldChange}>
-        <option value="">Select Type</option>
-        <option value="String">String</option>
-        <option value="Number">Number</option>
-        <option value="Boolean">Boolean</option>
-        <option value="Object">Object</option>
-      </select>
+    <div>
+      <div style={style}>
+      <div>
+        <input type="text" name="name" value={name} placeholder="Field Name" onChange={handleFieldChange} className={styles.fieldName} />
+        <select name="type" value={type} onChange={handleFieldChange} className={styles.select}>
+          <option value="">Select Type</option>
+          <option value="String">String</option>
+          <option value="Number">Number</option>
+          <option value="Boolean">Boolean</option>
+          <option value="Object">Object</option>
+        </select>
+      </div>
+      <div>
+      {field.type === "Object" && (
+        <button onClick={handleAddNestedField}>+</button>
+      )}
+      <button onClick={handleDelete}>
+        <RiDeleteBin5Line />
+      </button>
+      </div>
+      </div>
       {renderFields()}
-      <button onClick={handleAddNestedField} className="add-nested-field">
-        +
-      </button>
-      <button onClick={handleDelete} className="delete-field">
-        -
-      </button>
+      
     </div>
   );
 };
@@ -94,14 +99,28 @@ const App = () => {
     setFormData(updatedFormData);
   };
 
+  const handleAddField = () => {
+    const updatedFormData = [...formData];
+    updatedFormData.push({ name: "", type: "", fields: [] });
+    setFormData(updatedFormData);
+  };
+
   const handleSave = () => {
     console.log(formData);
   };
 
   return (
-    <div>
-      <h1>Form Builder</h1>
+    <div className={styles.mainDiv}>
+      <div className={styles.subDiv}>
+        <div className={styles.headingDiv}>
+          <h1>Field Name and Type</h1>
+          <button onClick={handleAddField}>+</button>
+        </div>
+      
       {formData.map((field, index) => (
+        <>
+        <span>{index+1}</span>
+        <div style={{display:"inline-flex", alignItems:"center"}}>
         <FormField
           key={index}
           field={field}
@@ -109,11 +128,17 @@ const App = () => {
             handleFieldChange(index, fieldName, fieldValue)
           }
           onDelete={() => handleDeleteField(index)}
-        />
+          style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"42.5rem"}}
+          level={1}
+      />
+      </div>
+      </>
       ))}
-      <button onClick={handleSave} className="save-button">
+      {/* Add more standalone FormField components as needed */}
+      <button onClick={handleSave} className={styles.btn}>
         Save
       </button>
+      </div>
     </div>
   );
 };

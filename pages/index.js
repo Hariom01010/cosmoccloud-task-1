@@ -1,98 +1,151 @@
 import React, { useState } from "react";
-import style from "../styles/Home.module.css"
+import styles from "../styles/Home.module.css"
 import { RiDeleteBin5Line } from "react-icons/ri"
+import { Switch } from "@chakra-ui/react";
 
-const App = () => {
-  // State to store the dynamically rendered data
-  const [data, setData] = useState([]);
+const FormField = ({ field, onChange, onDelete,style,level }) => {
+  const { name, type, fields, required } = field;
 
-  // Function to update the field name
-  const handleFieldNameChange = (index, newName) => {
-    setData(prevData => {
-      const updatedData = [...prevData];
-      updatedData[index].fieldName = newName;
-      return updatedData;
-    });
+  const handleFieldChange = (e) => {
+    const { name, value, checked, type } = e.target;
+    const fieldValue = type === "checkbox" ? checked : value;
+    onChange(name, fieldValue);
   };
 
-  // Function to update the field type
-  const handleFieldTypeChange = (index, newType) => {
-    setData(prevData => {
-      const updatedData = [...prevData];
-      updatedData[index].fieldType = newType;
-      return updatedData;
-    });
+  const handleDelete = () => {
+    onDelete(name);
   };
 
-  // Function to add a new field
-  const handleAddField = () => {
-    setData(prevData => [
-      ...prevData,
-      {
-        fieldName: "",
-        fieldType: ""
-      }
-    ]);
+  const renderFields = () => {
+    if (type === "Object" && fields && fields.length > 0) {
+      return (
+        <div style={{margin:"0px"}}>
+          {fields.map((nestedField, index) => (
+            <FormField
+              key={index}
+              field={nestedField}
+              onChange={(fieldName, fieldValue) =>
+                handleNestedFieldChange(index, fieldName, fieldValue)
+              }
+              onDelete={() => handleDeleteNestedField(index)}
+              style={{marginLeft: `${level * 12}px`, display:"flex", alignItems:"center", justifyContent:"space-between"}}
+              level={level+1}
+            />
+          ))}
+        </div>
+      );
+    }
+    return null;
   };
 
-  // Function to delete a field
-  const handleDeleteField = index => {
-    setData(prevData => {
-      const updatedData = [...prevData];
-      updatedData.splice(index, 1);
-      return updatedData;
-    });
+  const handleNestedFieldChange = (index, fieldName, fieldValue) => {
+    const updatedFields = [...field.fields];
+    updatedFields[index][fieldName] = fieldValue;
+    onChange("fields", updatedFields);
+  };
+
+  const handleAddNestedField = () => {
+    const updatedFields = [...(field.fields || [])];
+    updatedFields.push({ name: "", type: "" });
+    onChange("fields", updatedFields);
+  };
+
+  const handleDeleteNestedField = (index) => {
+    const updatedFields = [...field.fields];
+    updatedFields.splice(index, 1);
+    onChange("fields", updatedFields);
   };
 
   return (
-    <div className={style.mainDiv}>
-      <div className={style.subDiv}>
-        <div className={style.headingDiv}>
-          <p>Field Name and Type</p>
+    <div>
+      <div style={style}>
+      <div>
+        <input type="text" name="name" value={name} placeholder="Field Name" onChange={handleFieldChange} className={styles.fieldName} />
+        <select name="type" value={type} onChange={handleFieldChange} className={styles.select}>
+          <option value="" selected disabled hidden>Select Type</option>
+          <option value="String">String</option>
+          <option value="Number">Number</option>
+          <option value="Boolean">Boolean</option>
+          <option value="Object">Object</option>
+        </select>
+      </div>
+      <div className={styles.inputDivSub2}>
+        <div>
+        <label>Required: </label>
+        <Switch onChange={handleFieldChange} name="required"/>
+        </div>
+      {field.type === "Object" && (
+        <button onClick={handleAddNestedField}>+</button>
+      )}
+      <button onClick={handleDelete}>
+        <RiDeleteBin5Line />
+      </button>
+      </div>
+      </div>
+      {renderFields()}
+      
+    </div>
+  );
+};
+
+const App = () => {
+  const [formData, setFormData] = useState([
+    { name: "", type: "",required:false, fields: [] },
+  ]);
+
+  const handleFieldChange = (index, fieldName, fieldValue) => {
+    const updatedFormData = [...formData];
+    updatedFormData[index][fieldName] = fieldValue;
+    setFormData(updatedFormData);
+  };
+
+  const handleDeleteField = (index) => {
+    const updatedFormData = [...formData];
+    updatedFormData.splice(index, 1);
+    setFormData(updatedFormData);
+  };
+
+  const handleAddField = () => {
+    const updatedFormData = [...formData];
+    updatedFormData.push({ name: "", type: "", fields: [] });
+    setFormData(updatedFormData);
+  };
+
+  const handleSave = () => {
+    console.log(formData);
+  };
+
+  return (
+    <div className={styles.mainDiv}>
+      <div className={styles.subDiv}>
+        <div className={styles.headingDiv}>
+          <h1>Field Name and Type</h1>
           <button onClick={handleAddField}>+</button>
         </div>
-    <div>
-      {data.map((field, index) => (
-        <div style={{display:"flex", alignItems:"center"}}>
+      
+      {formData.map((field, index) => (
+        <>
         <span>{index+1}</span>
-        <div key={index} style={{display:"flex", justifyContent:"space-between", alignItems:"center",width:"53rem"}}>
-          <div>
-            <input
-              type="text"
-              placeholder="addName"
-              value={field.fieldName}
-              onChange={e => handleFieldNameChange(index, e.target.value)}
-              className={style.fieldName}
-            />
-            <select 
-              className={style.select}
-              value={field.fieldType}
-              onChange={e => handleFieldTypeChange(index, e.target.value)}
-            >
-              <option value="string">String</option>
-              <option value="number">Number</option>
-              <option value="boolean">Boolean</option>
-              <option value="object">Object</option>
-            </select>
-          </div>
-          <div>
-          <button onClick={() => handleDeleteField(index)}><RiDeleteBin5Line /></button>
-          {field.fieldType === "object" && (
-            <>
-            <button onClick={event=>{console.log(event)}}>+</button>
-            <div>
-              {/* Render nested fields dynamically here */}
-            </div>
-            </>
-          )}
-          </div>
-        </div>
-        </div>
-
+        <div style={{display:"inline-flex", alignItems:"center"}}>
+        <FormField
+          key={index}
+          field={field}
+          onChange={(fieldName, fieldValue) =>
+            handleFieldChange(index, fieldName, fieldValue)
+          }
+          onDelete={() => handleDeleteField(index)}
+          style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"42.5rem"}}
+          level={1}
+      />
+      </div>
+      <hr />
+      </>
       ))}
-      <button onClick={() => console.log(data)} className={style.btn}>Save</button>
-    </div>
-    </div>
+      {/* Add more standalone FormField components as needed */}
+      <button onClick={handleSave} className={styles.btn}>
+        Save
+      </button>
+      </div>
     </div>
   );
 };
